@@ -2,37 +2,37 @@ import { Footer, Input, Modal, Sidebar, Table } from "@/components";
 import { create, del, read, update } from "@/hooks";
 import { useEffect, useState } from "react";
 
-export default function Users() {
-  const [users, setUsers] = useState();
+export default function Orders() {
+  const [data, setData] = useState();
   const [id, setId] = useState();
   const [open, setOpen] = useState(false);
-  const [username, setUsername] = useState();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
-  const [search, setSearch] = useState("");
+  const [total_amount, setTotalAmount] = useState();
+  const [status, setStatus] = useState();
+  const [user_id, setUserId] = useState();
+  const [search, setSearch] = useState();
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
   const fetchPosts = () => {
-    read("users", setUsers);
+    read("orders", setData);
   };
   const handleEdit = (i) => {
-    setId(users[i].user_id);
+    setId(data[i].order_id);
     setOpen(true);
-    setUsername(users[i].username);
-    setEmail(users[i].email);
-    setPassword(users[i].password);
+    setTotalAmount(data[i].total_amount);
+    setStatus(data[i].status);
+    setUserId(data[i].user_id);
   };
   const handleUpdate = () => {
     update(
-      "update_users",
+      "update_orders",
       {
-        username,
-        email,
-        password,
-        user_id: id,
+        user_id,
+        total_amount,
+        status,
+        order_id: id,
       },
       () => {
         setOpen(false);
@@ -41,18 +41,18 @@ export default function Users() {
     );
   };
   const handleDelete = () => {
-    del("delete_user", id, () => {
+    del("delete_order", id, () => {
       setOpen(false);
       fetchPosts();
     });
   };
   const handleAdd = () => {
     create(
-      "add_user",
+      "add_order",
       {
-        username,
-        email,
-        password,
+        user_id,
+        total_amount,
+        status,
       },
       () => {
         setOpen(false);
@@ -62,18 +62,19 @@ export default function Users() {
   };
   const handleAddButton = () => {
     setId(null);
-    setUsername("");
-    setEmail("");
-    setPassword("");
     setOpen(true);
+    setTotalAmount(null);
+    setStatus(null);
+    setUserId(null);
   };
   const filter = () => {
-    if (!search) return users;
-    return users.filter((e) => {
+    if (!search) return data;
+    return data.filter((e) => {
       return (
-        e.username.toLowerCase().includes(search.toLowerCase()) ||
-        e.email.toLowerCase().includes(search.toLowerCase()) ||
-        e.user_id.toString().includes(search.toLowerCase())
+        e.status.includes(search.toLowerCase()) ||
+        e.total_amount.toString().includes(search.toLowerCase()) ||
+        e.order_id.toString().includes(search) ||
+        e.user_id.toString().includes(search)
       );
     });
   };
@@ -87,14 +88,14 @@ export default function Users() {
             className="p-3 border-blue-400 border whitespace-nowrap px-6 rounded-lg h-min bg-blue-400"
             onClick={handleAddButton}
           >
-            Add User
+            Add Order
           </button>
           <Input value={search} setValue={setSearch} label="Search" />
         </div>
         <Table 
-          columns={['ID', 'Email', 'Username', 'Created Date']}
-          rows={['user_id', 'email', 'username', 'created_at']}
-          data={users}
+          columns={['ID', 'Status', 'Total Amount', 'User ID']}
+          rows={['order_id', 'status', 'total_amount', 'user_id']}
+          data={data}
           filter={filter}
           handleEdit={handleEdit}
         />
@@ -103,20 +104,24 @@ export default function Users() {
       <Modal
         open={open}
         setOpen={setOpen}
-        title={id ? "Update User" : "Add User"}
+        title={id ? "Update Order" : "Add Order"}
+        id={id}
         handleAdd={handleAdd}
         handleDelete={handleDelete}
         handleUpdate={handleUpdate}
-        id={id}
       >
-        <Input label="Username" value={username} setValue={setUsername} />
-        <Input label="Email" value={email} setValue={setEmail} />
         <Input
-          type="password"
-          label="Password"
-          value={password}
-          setValue={setPassword}
+          label="Status"
+          value={status}
+          setValue={setStatus}
         />
+        <Input
+          label="Total Amount"
+          value={total_amount}
+          type="number"
+          setValue={setTotalAmount}
+        />
+        <Input label="User ID" type="number" value={user_id} setValue={setUserId} />
       </Modal>
     </div>
   );
